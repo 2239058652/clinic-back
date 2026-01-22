@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dental.clinic.module.user.mapper.UserMapper">
+
+    <!-- 基础用户结果映射 -->
+    <resultMap id="UserResultMap" type="com.dental.clinic.module.user.entity.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="realName" column="real_name"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="avatar" column="avatar"/>
+        <result property="status" column="status"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="updatedTime" column="updated_time"/>
+        <result property="deleted" column="deleted"/>
+    </resultMap>
+
+    <!-- UserListDTO 的 ResultMap -->
+    <resultMap id="UserListResultMap" type="com.dental.clinic.module.user.dto.UserListDTO">
+        <id property="id" column="u_id"/>
+        <result property="username" column="u_username"/>
+        <result property="realName" column="u_real_name"/>
+        <result property="phone" column="u_phone"/>
+        <result property="email" column="u_email"/>
+        <result property="avatar" column="u_avatar"/>
+        <result property="status" column="u_status"/>
+        <result property="createdTime" column="u_created_time"/>
+        <result property="updatedTime" column="u_updated_time"/>
+        <result property="deleted" column="u_deleted"/>
+        <!-- 使用 collection 映射角色列表，通过子查询获取 -->
+        <collection property="roles" ofType="java.lang.String" select="selectUserRolesForUser" column="u_id"/>
+    </resultMap>
+
+    <!-- 为 UserWithRolesDTO 创建新的 ResultMap -->
+    <resultMap id="UserWithRolesResultMap" type="com.dental.clinic.module.user.dto.UserWithRolesDTO">
+        <!-- 使用 association 映射嵌套的 User 对象，并指定列前缀 -->
+        <association property="user" columnPrefix="u_" resultMap="com.dental.clinic.module.user.mapper.UserMapper.UserResultMap"/>
+        <!-- 使用 collection 映射角色列表，通过子查询获取 -->
+        <collection property="roles" ofType="java.lang.String" select="selectUserRolesForUser" column="u_id"/>
+    </resultMap>
+
+    <!-- 用于 collection 的子查询 -->
+    <select id="selectUserRolesForUser" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT r.role_code
+        FROM roles r
+        JOIN user_roles ur ON r.id = ur.role_id
+        WHERE ur.user_id = #{userId} AND r.status = 1 AND r.deleted = 0
+    </select>
+
+    <!-- 根据用户名查询用户 (只查未删除的) -->
+    <select id="selectByUsername" parameterType="java.lang.String" resultMap="UserResultMap">
+        SELECT * FROM users WHERE username = #{username} AND deleted = 0
+    </select>
+
+    <!-- 根据用户名查询用户 (只查未删除的 和 启用状态的) - 用于 CustomUserDetailsService -->
+    <select id="selectByUsernameAndNotDeleted" parameterType="java.lang.String" resultMap="UserResultMap">
+        SELECT * FROM users WHERE username = #{username} AND deleted = 0 AND status = 1
+    </select>
+
+    <!-- 根据ID查询用户 (只查未删除的) -->
+    <select id="selectByIdAndNotDeleted" parameterType="java.lang.Long" resultMap="UserResultMap">
+        SELECT * FROM users WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <!-- 查询所有用户 (只查未删除的) -->
+    <select id="selectAllNotDeleted" resultMap="UserResultMap">
+        SELECT * FROM users WHERE deleted = 0
+    </select>
+
+    <!-- 分页 条件查询所有用户 -->
+    <select id="selectAll" resultMap="UserResultMap">
+        SELECT * FROM users
+        WHERE deleted = 0
+        <if test="username != null and username != ''">
+            AND username LIKE CONCAT('%', #{username}, '%')
+        </if>
+        <if test="phone != null and phone != ''">
+            AND phone LIKE CONCAT('%', #{phone}, '%')
+        </if>
+        <if test="roleCode != null and roleCode != ''">
+            AND id IN (SELECT user_id FROM user_roles ur JOIN roles r ON ur.role_id = r.id WHERE r.role_code = #{roleCode} AND r.status = 1 AND r.deleted = 0)
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY updated_time DESC
+    </select>
+
+    <!-- 查询所有用户 -->
+    <select id="selectByAll" resultMap="UserResultMap">
+        SELECT * FROM users
+        <!-- 如果有逻辑删除字段，可以加上 WHERE deleted = 0 -->
+        WHERE deleted = 0
+    </select>
+
+    <!-- 插入用户 -->
+    <insert id="insert" parameterType="com.dental.clinic.module.user.entity.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (username, password, real_name, phone, email, avatar, status, created_time, updated_time, deleted)
+        VALUES (#{username}, #{password}, #{realName}, #{phone}, #{email}, #{avatar}, #{status}, #{createdTime}, #{updatedTime}, #{deleted})
+    </insert>
+
+    <!-- 更新用户 -->
+    <update id="updateById" parameterType="com.dental.clinic.module.user.entity.User">
+        UPDATE users
+        SET username = #{username},
+        password = #{password},
+        real_name = #{realName},
+        phone = #{phone},
+        email = #{email},
+        avatar = #{avatar},
+        status = #{status},
+        updated_time = #{updatedTime},
+        deleted = #{deleted} <!-- 如果需要更新 deleted 字段 -->
+        WHERE id = #{id}
+    </update>
+
+    <!-- 物理删除用户 (根据ID删除用户) -->
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM users WHERE id = #{id}
+    </delete>
+
+    <!-- 根据ID查询用户 (根据ID查询用户) -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="UserResultMap">
+        SELECT * FROM users WHERE id = #{id}
+    </select>
+
+    <!-- 新增：查询用户的所有角色编码 -->
+    <select id="selectUserRoles" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT r.role_code
+        FROM users u
+        JOIN user_roles ur ON u.id = ur.user_id
+        JOIN roles r ON ur.role_id = r.id
+        WHERE u.id = #{userId} AND u.deleted = 0 AND u.status = 1 AND r.status = 1 AND r.deleted = 0
+    </select>
+
+    <!-- 新增：查询用户的所有权限编码 -->
+    <select id="selectUserPermissions" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT p.permission_code
+        FROM users u
+        JOIN user_roles ur ON u.id = ur.user_id
+        JOIN role_permissions rp ON ur.role_id = rp.role_id
+        JOIN permissions p ON rp.permission_id = p.id
+        WHERE u.id = #{userId} AND u.deleted = 0 AND u.status = 1 AND p.status = 1 AND p.deleted = 0
+    </select>
+
+    <!-- 新增：查询包含角色信息的用户列表 -->
+    <select id="selectAllWithRoles" resultMap="UserListResultMap">
+        SELECT DISTINCT u.id as u_id, u.username as u_username, u.password as u_password, u.real_name as u_real_name,
+        u.phone as u_phone, u.email as u_email, u.avatar as u_avatar,
+        u.status as u_status, u.created_time as u_created_time, u.updated_time as u_updated_time, u.deleted as u_deleted
+        FROM users u
+        LEFT JOIN user_roles ur ON u.id = ur.user_id
+        LEFT JOIN roles r ON ur.role_id = r.id
+        WHERE u.deleted = 0
+        <if test="username != null and username != ''">
+            AND u.username LIKE CONCAT('%', #{username}, '%')
+        </if>
+        <if test="phone != null and phone != ''">
+            AND u.phone LIKE CONCAT('%', #{phone}, '%')
+        </if>
+        <if test="roleCode != null and roleCode != ''">
+            AND r.role_code = #{roleCode}
+        </if>
+        <if test="status != null">
+            AND u.status = #{status}
+        </if>
+        ORDER BY u.updated_time DESC
+    </select>
+
+</mapper>

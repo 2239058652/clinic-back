@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dental.clinic.module.rolepermission.mapper.RoleMapper">
+
+    <resultMap id="RoleResultMap" type="com.dental.clinic.module.rolepermission.entity.Role">
+        <id property="id" column="id"/>
+        <result property="roleName" column="role_name"/>
+        <result property="roleCode" column="role_code"/>
+        <result property="description" column="description"/>
+        <result property="status" column="status"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="updatedTime" column="updated_time"/>
+        <result property="deleted" column="deleted"/>
+    </resultMap>
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="RoleResultMap">
+        SELECT * FROM roles WHERE id = #{id}
+    </select>
+
+    <select id="selectByCode" parameterType="java.lang.String" resultMap="RoleResultMap">
+        SELECT * FROM roles WHERE role_code = #{roleCode} AND deleted = 0
+    </select>
+
+    <select id="selectByName" parameterType="java.lang.String" resultMap="RoleResultMap">
+        SELECT * FROM roles WHERE role_name = #{roleName} AND deleted = 0
+    </select>
+
+    <select id="selectAllNotDeleted" resultMap="RoleResultMap">
+        SELECT * FROM roles WHERE deleted = 0
+    </select>
+
+    <insert id="insert" parameterType="com.dental.clinic.module.rolepermission.entity.Role" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO roles (role_name, role_code, description, status, created_time, updated_time, deleted)
+        VALUES (#{roleName}, #{roleCode}, #{description}, #{status}, #{createdTime}, #{updatedTime}, #{deleted})
+    </insert>
+
+    <update id="updateById" parameterType="com.dental.clinic.module.rolepermission.entity.Role">
+        UPDATE roles
+        SET role_name = #{roleName},
+        description = #{description},
+        updated_time = #{updatedTime},
+        deleted = #{deleted}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM roles WHERE id = #{id}
+    </delete>
+
+</mapper>
