@@ -1,5 +1,6 @@
 package com.dc.clinic.modules.auth.controller;
 
+import com.dc.clinic.common.annotation.Log;
 import com.dc.clinic.common.response.Result;
 import com.dc.clinic.modules.auth.dto.LoginRequest;
 import com.dc.clinic.modules.auth.service.AuthService;
@@ -21,6 +22,7 @@ public class AuthController {
      * 登录接口
      * - @Valid 注解会自动校验 LoginRequest 里的 @NotBlank 规则
      */
+    @Log(title = "用户管理", businessType = "SELECT") // 👈 这一行就会触发自动记录日志
     @PostMapping("/login")
     public Result<String> login(@Valid @RequestBody LoginRequest loginRequest) {
         // 调用 Service 层处理逻辑，成功则返回 Token
