@@ -22,7 +22,7 @@ spring:
     redis:
       host: localhost
       port: 6379
-      password: Dingtong1998
+#      password: Dingtong1998
       database: 0
       lettuce:
         pool:
@@ -67,7 +67,8 @@ mybatis-plus:
 # JWT 配置（自定义配置）
 jwt:
   # 密钥（建议生产环境放到环境变量）
-  secret: clinic_secret_123_your_very_long_secret_key_minimum_32_characters
+  secret: dc_clinic_management_system_secret_key_2026
+  expiration: 86400000 # 24小时
   # Access Token 过期时间（30分钟，单位：毫秒）
   access-token-expiration: 1800000
   # Refresh Token 过期时间（7天，单位：毫秒）
@@ -97,18 +98,64 @@ springdoc:
 # 日志配置
 logging:
   level:
-    # 项目日志级别
-    com.clinic: DEBUG
-    # Spring Security 日志
-    org.springframework.security: INFO
-    # MyBatis 日志
+    # 你的应用包名（修正）
+    com.dc.clinic: DEBUG
+    
+    # Spring 框架
+    org.springframework: INFO
+    org.springframework.boot: INFO
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG  # 改为 DEBUG 看更多安全日志
+    org.springframework.transaction: DEBUG
+    
+    # 数据库相关
+    org.springframework.jdbc: DEBUG
+    org.springframework.orm.jpa: DEBUG
+    
+    # MyBatis
     com.baomidou.mybatisplus: DEBUG
-  # 日志文件
+    org.apache.ibatis: INFO
+    
+    # 数据源和连接池
+    com.zaxxer.hikari: DEBUG
+    
+    # HTTP 请求
+    org.apache.coyote: INFO
+    org.apache.tomcat: INFO
+    
+    # Jackson
+    com.fasterxml.jackson: INFO
+    
+    # Redis
+    org.springframework.data.redis: DEBUG
+    io.lettuce.core: INFO
+    
+    # JWT
+    io.jsonwebtoken: INFO
+    
+    # Swagger
+    org.springdoc: INFO
+    io.swagger.v3: INFO
+  
+  # 文件配置
   file:
     name: logs/clinic.log
     max-size: 10MB
     max-history: 30
+    total-size-cap: 100MB
+    
+  # 归档配置（可选）
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+      total-size-cap: 100MB
+      clean-history-on-start: false
+  
   # 日志格式
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    # 控制台输出格式（更详细）
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{36}) - %msg%n"
+    
+    # 文件输出格式（包含更多信息）
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%file:%line] - %msg%n"

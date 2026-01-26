@@ -25,7 +25,7 @@ public class ClinicApplication {
 				"║   🏥 Clinic Backend Started Successfully! 🏥  ║\n" +
 				"║                                               ║\n" +
 				"║   🌐 Server: http://localhost:9095           ║\n" +
-				"║   📚 Swagger: http://localhost:9095/swagger-ui.html ║\n" +
+				"║   📚 Swagger: http://localhost:9095/swagger-ui/index.html#/ ║\n" +
 				"║                                               ║\n" +
 				"╚═══════════════════════════════════════════════╝\n");
 	}
