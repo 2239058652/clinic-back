@@ -37,6 +37,7 @@ Actuator 端点：
             访问 http://localhost:4300/actuator/loggers/com.dental.clinic 可以查看 com.dental.clinic 包的日志级别。
             访问 http://localhost:4300/actuator/loggers 可以查看当前所有 Logger 的名称和日志级别。     
 
+```
 com.dental.clinic
 ├─ common
 ├─ config
@@ -64,3 +65,4 @@ com.dental.clinic
 │         └─ enums
 │               └─ UserStatusEnum.java
 └─ ClinicSystemApplication.java
+```

@@ -12,8 +12,6 @@ target/
 .settings
 .springBeans
 .sts4-cache
-.env.development
-application-dev.yml
 
 ### IntelliJ IDEA ###
 .idea
@@ -22,11 +20,6 @@ application-dev.yml
 *.ipr
 
 ### NetBeans ###
-/logs/
-logs/
-logs/**
-*/logs/
-**/logs/
 /nbproject/private/
 /nbbuild/
 /dist/
