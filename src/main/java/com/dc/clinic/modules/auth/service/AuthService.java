@@ -3,7 +3,9 @@ package com.dc.clinic.modules.auth.service;
 import com.dc.clinic.common.response.Result;
 import com.dc.clinic.common.utils.JwtUtils;
 import com.dc.clinic.modules.auth.dto.LoginRequest;
+import com.dc.clinic.modules.auth.dto.LoginUser;
 import com.dc.clinic.modules.system.entity.User;
+import com.dc.clinic.modules.system.mapper.PermissionMapper;
 import com.dc.clinic.modules.system.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -28,6 +32,9 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private PermissionMapper permissionMapper;
+
     public Result<String> login(LoginRequest request) {
         // 1. 查询用户
         User user = userService.getOne(new LambdaQueryWrapper<User>()
@@ -42,13 +49,17 @@ public class AuthService {
             return Result.error("账号已被禁用");
         }
 
-        // 3. 生成 Token
+        // 2. 查询权限列表
+        List<String> permCodes = permissionMapper.selectPermissionCodesByUserId(user.getId());
+
+        // 3. 封装 LoginUser (带权限)
+        LoginUser loginUser = new LoginUser(user, new HashSet<>(permCodes));
+
+        // 4. 存入 Redis 并返回 Token
+        // 注意：建议把 loginUser 序列化成 JSON 存入 Redis，这样 Filter 就不必每次都查库
+        redisTemplate.opsForValue().set("login:token:" + user.getUsername(), loginUser, 24, TimeUnit.HOURS);
+
         String token = jwtUtils.createToken(user.getUsername());
-
-        // 4. 存入 Redis (实现 SSO 的关键：key中包含用户名)
-        // 这样新登录会覆盖旧登录，或者你可以用来校验有效性
-        redisTemplate.opsForValue().set("login:token:" + user.getUsername(), token, 24, TimeUnit.HOURS);
-
         return Result.success(token);
     }
 }

@@ -1,39 +1,73 @@
 package com.dc.clinic.modules.auth.dto;
 
 import com.dc.clinic.modules.system.entity.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class LoginUser implements UserDetails {
-    private User user; // 我们自己的数据库实体类
 
+    private User user;
+    private Set<String> permissions;
+
+    /**
+     * 注意：这里一定要加 @JsonIgnore，防止 Jackson 序列化 authorities 字段
+     * Security 权限校验是在 Filter 里实时通过 getAuthorities() 获取的，不需要存入 Redis
+     */
+    @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // 这里暂时返回 null，后续做权限控制（角色、权限）时再补全
-        return null;
+        if (permissions == null)
+            return null;
+        return permissions.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public String getPassword() { return user.getPassword(); }
+    public String getPassword() {
+        return user.getPassword();
+    }
 
     @Override
-    public String getUsername() { return user.getUsername(); }
+    public String getUsername() {
+        return user.getUsername();
+    }
 
-    // 账号是否没过期、没锁定、凭证没过期、是否启用（都返回 true）
+    @JsonIgnore // 👈 加忽略
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @JsonIgnore // 👈 加忽略
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @JsonIgnore // 👈 加忽略
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @JsonIgnore // 👈 加忽略
     @Override
-    public boolean isEnabled() { return "ACTIVE".equals(user.getStatus()); }
+    public boolean isEnabled() {
+        return "ACTIVE".equals(user.getStatus());
+    }
 }

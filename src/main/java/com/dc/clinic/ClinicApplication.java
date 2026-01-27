@@ -3,6 +3,7 @@ package com.dc.clinic;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 /**
  * 诊所管理系统 - 主启动类
@@ -13,6 +14,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * - @ComponentScan: 自动扫描组件
  */
 @SpringBootApplication
+@EnableAspectJAutoProxy // 确保启用 AOP
 @MapperScan("com.dc.clinic.modules.*.mapper") // 使用通配符 * 匹配中间的模块名，精确锁定到 mapper 包
 public class ClinicApplication {
 

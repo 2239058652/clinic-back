@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dc.clinic.modules.system.mapper.PermissionMapper">
+
+    <select id="selectPermissionCodesByUserId" resultType="java.lang.String">
+        SELECT DISTINCT p.code
+        FROM permissions p
+        INNER JOIN role_permissions rp ON p.id = rp.permissionId
+        INNER JOIN roles r ON rp.roleId = r.id
+        INNER JOIN user_roles ur ON r.id = ur.roleId
+        WHERE ur.userId = #{userId}
+        AND p.status = 'ACTIVE'
+        AND r.status = 'ACTIVE'
+        AND p.deletedAt IS NULL
+    </select>
+
+</mapper>
