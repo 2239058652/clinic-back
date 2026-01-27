@@ -1,5 +1,6 @@
 package com.dc.clinic.modules.auth.service;
 
+import com.dc.clinic.common.exception.ServiceException;
 import com.dc.clinic.common.response.Result;
 import com.dc.clinic.common.utils.JwtUtils;
 import com.dc.clinic.modules.auth.dto.LoginRequest;
@@ -41,10 +42,14 @@ public class AuthService {
                 .eq(User::getUsername, request.getUsername()));
 
         // 2. 校验
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return Result.error("用户名或密码错误");
+        if (user == null) {
+            // 以前你可能返回 null，现在直接抛异常
+            throw new ServiceException("该用户不存在");
         }
-        
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            return Result.error("密码错误");
+        }
+
         if (!"ACTIVE".equals(user.getStatus())) {
             return Result.error("账号已被禁用");
         }

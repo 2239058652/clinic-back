@@ -18,11 +18,6 @@ public class UserController {
     @PreAuthorize("hasAuthority('user:create')")
     @GetMapping("/{id}")
     public Result<User> getUserById(@PathVariable Integer id) {
-        User user = userService.getById(id);
-        if (user != null) {
-            return Result.success(user);
-        } else {
-            return Result.error("未找到该用户");
-        }
+        return Result.success(userService.getById(id));
     }
 }

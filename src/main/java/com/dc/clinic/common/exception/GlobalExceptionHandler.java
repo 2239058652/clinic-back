@@ -6,44 +6,45 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.nio.file.AccessDeniedException;
+import org.springframework.security.access.AccessDeniedException; // ⚠️ 注意：必须是 security 包下的异常
 
 @Slf4j
-@RestControllerAdvice // 👈 拦截所有 Controller 抛出的异常
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     /**
-     * 处理自定义业务异常
+     * 1. 专门处理业务异常 (ServiceException)
      */
-    @ExceptionHandler(RuntimeException.class)
-    public Result<String> handleRuntimeException(RuntimeException e) {
-        log.error("运行时异常: ", e);
-        return Result.error(e.getMessage());
+    @ExceptionHandler(ServiceException.class)
+    public Result<String> handleServiceException(ServiceException e) {
+        // 使用你 Result 类里定义的 error 方法
+        return Result.error(e.getCode(), e.getMessage());
     }
 
     /**
-     * 处理 Spring Security 权限异常
+     * 2. 处理 Spring Security 权限不足 (返回 403)
      */
     @ExceptionHandler(AccessDeniedException.class)
     public Result<String> handleAccessDeniedException(AccessDeniedException e) {
-        return Result.error(403, "没有权限访问该资源");
+        log.warn("用户访问受限: {}", e.getMessage());
+        return Result.forbidden("权限不足，请联系管理员"); // 使用你 Result 里的 forbidden 方法
     }
 
     /**
-     * 处理参数校验异常 (比如 @NotBlank 没通过)
+     * 3. 处理参数校验异常 (比如 @NotBlank)
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Result<String> handleValidationException(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getFieldError().getDefaultMessage();
-        return Result.error(message);
+        return Result.badRequest(message);
     }
 
     /**
-     * 处理系统未知的最大异常
+     * 4. 兜底处理所有 RuntimeException (防止代码崩溃)
      */
-    @ExceptionHandler(Exception.class)
-    public Result<String> handleException(Exception e) {
-        log.error("系统未知异常: ", e);
-        return Result.error("服务器开小差了，请稍后再试");
+    @ExceptionHandler(RuntimeException.class)
+    public Result<String> handleRuntimeException(RuntimeException e) {
+        log.error("运行时异常: ", e);
+        return Result.internalError(e.getMessage());
     }
 }
