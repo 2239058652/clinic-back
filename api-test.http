@@ -1,0 +1,529 @@
+### 完整的 RBAC 系统 API 测试用例
+### 保存到 scripts/rbac-test.http
+
+# 3. 测试账号
+# 用户名 密码 角色  权限  
+# superadmin admin123 超级管理员 所有权限
+# admin admin123 管理员 用户/角色/权限管理
+# doctor admin123 医生 查看用户
+# nurse admin123 护士 无
+
+@baseUrl = http://localhost:9095
+@superAdminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoic3VwZXJhZG1pbiIsImp0aSI6IjgyYTA3YTUyLWUwZmMtNDdjZC05OGE1LWRjMmNhMWQyNWZjNiIsInJvbGVzIjpbIlNVUEVSX0FETUlOIl0sInBlcm1pc3Npb25zIjpbInN5c3RlbSIsInN5c3RlbTp1c2VyIiwidXNlcjp2aWV3IiwidXNlcjpkZWxldGUiLCJ1c2VyOmNyZWF0ZSIsInVzZXI6dXBkYXRlIiwic3lzdGVtOnJvbGUiLCJyb2xlOnZpZXciLCJyb2xlOmNyZWF0ZSIsInJvbGU6dXBkYXRlIiwicm9sZTpkZWxldGUiLCJyb2xlOmFzc2lnbiIsInVzZXI6YXNzaWduLXJvbGUiLCJzeXN0ZW06cGVybWlzc2lvbiIsInBlcm1pc3Npb246dXBkYXRlIiwicGVybWlzc2lvbjp2aWV3IiwicGVybWlzc2lvbjpjcmVhdGUiLCJwZXJtaXNzaW9uOmRlbGV0ZSJdLCJpYXQiOjE3NjkwNDk0NjQsImV4cCI6MTc2OTA1MTI2NH0.wmmHfA5473PU_-R6PSbQkOaqpLIrCnnwiARtXlvKvsE
+@adminToken = 
+@doctorToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsInVzZXJuYW1lIjoiZG9jdG9yIiwianRpIjoiZjUyN2M1YjctODAzZS00ZDhiLWJiNjAtZDVmNWRiNDZiMDkxIiwicm9sZXMiOlsiRE9DVE9SIl0sInBlcm1pc3Npb25zIjpbInVzZXI6dmlldyJdLCJpYXQiOjE3Njk1MDU2MDcsImV4cCI6MTc2OTUwNzQwN30.XMXnkpdftIf-bMUpM2TxwwYALefKgmBi5Q5bqv__FvQ
+@pharmacistToken =
+
+### 登录
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "doctor",
+  "password": "admin123"
+}
+
+### 退出登录
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{superAdminToken}}
+
+### 刷新 Token
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJpZCI6ImQyYjEwMmQ0LWQ4ZDItNDQxNS05YzQzLTQxYzUzMDkxMzQ3ZCIsInVzZXJuYW1lIjoidGVzdHVzZXIiLCJpYXQiOjE3MzY5ODg4MDAsImV4cCI6MTczNjk4ODgwMH0.7bXKqJd8uY9eYhTf5v7a8sQ2tP7n7kF3m4r5v7a8sQ2tP7n7kF3m4r5v7a8sQ2tP7n7kF3m4r5v7a8sQ2tP7n7kF3m4r5"
+}
+
+### 获取用户信息（需 JWT）
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{superAdminToken}}
+
+### 获取用户列表
+GET {{baseUrl}}/users
+Authorization: Bearer {{superAdminToken}}
+
+### 创建用户
+POST {{baseUrl}}/users
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "username": "user3",
+  "password": "123456",
+  "email": "user3@example.com"
+}
+
+### 删除用户（假设创建的用户 ID 是 2）
+DELETE {{baseUrl}}/users/3
+Authorization: Bearer {{superAdminToken}}
+
+### ========================================
+### 日志管理 API 测试
+### ========================================
+
+### 查看日志内容
+GET {{baseUrl}}/logs/view?type=app&file=2026-01-21.log&limit=10000&level=info
+Content-Type: application/json
+
+### 4. 获取登录日志（默认）
+GET {{baseUrl}}/logs/login/logs
+Authorization: Bearer {{doctorToken}}
+
+### 5. 获取登录日志（按状态过滤）
+GET {{baseUrl}}/logs/login/logs?status=SUCCESS
+Authorization: Bearer {{doctorToken}}
+
+### 1. 获取审计日志（默认）
+GET {{baseUrl}}/logs/audit/logs
+Authorization: Bearer {{doctorToken}}
+
+### 2. 获取审计日志（带分页）
+GET {{baseUrl}}/logs/audit/logs?page=2&limit=5
+Authorization: Bearer {{doctorToken}}
+
+### ========================================
+### 1. 认证相关
+### ========================================
+
+### 1.1 超级管理员登录
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "superadmin",
+  "password": "admin123"
+}
+
+### 1.2 管理员登录
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+### 1.3 医生登录
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "doctor",
+  "password": "admin123"
+}
+
+### 1.4 获取当前用户信息
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{superAdminToken}}
+
+### ========================================
+### 2. 权限管理
+### ========================================
+
+### 2.1 创建权限 - 患者管理菜单
+POST {{baseUrl}}/permissions
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "code": "patient",
+  "name": "患者管理",
+  "type": "MENU",
+  "path": "/patient",
+  "icon": "MedicineBoxOutlined",
+  "sort": 2
+}
+
+### 2.2 创建权限 - 患者查看
+POST {{baseUrl}}/permissions
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "code": "patient:view",
+  "name": "查看患者",
+  "type": "API",
+  "parentId": 1,
+  "sort": 1
+}
+
+### 2.3 查询权限列表
+GET {{baseUrl}}/permissions
+Authorization: Bearer {{superAdminToken}}
+
+### 2.4 查询权限列表（按类型筛选）
+GET {{baseUrl}}/permissions?type=API
+Authorization: Bearer {{superAdminToken}}
+
+### 2.5 查询权限列表（按名称搜索）
+GET {{baseUrl}}/permissions?name=用户
+Authorization: Bearer {{superAdminToken}}
+
+### 2.6 获取树形权限结构
+GET {{baseUrl}}/permissions/tree
+Authorization: Bearer {{superAdminToken}}
+
+### 2.7 查询权限详情
+GET {{baseUrl}}/permissions/1
+Authorization: Bearer {{superAdminToken}}
+
+### 2.8 更新权限
+PUT {{baseUrl}}/permissions/1
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "name": "系统管理（已更新）",
+  "description": "系统管理模块"
+}
+
+### 2.9 获取权限关联的角色
+GET {{baseUrl}}/permissions/1/roles
+Authorization: Bearer {{superAdminToken}}
+
+### 2.10 删除权限（测试失败 - 有子权限）
+DELETE {{baseUrl}}/permissions/1
+Authorization: Bearer {{superAdminToken}}
+
+### 2.11 删除权限（成功 - 叶子节点）
+DELETE {{baseUrl}}/permissions/15
+Authorization: Bearer {{superAdminToken}}
+
+### 2.12 批量删除权限
+DELETE {{baseUrl}}/permissions/batch
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "ids": [
+    16,
+    17
+  ]
+}
+
+### ========================================
+### 3. 角色管理
+### ========================================
+
+### 3.1 创建角色
+POST {{baseUrl}}/roles
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "code": "RECEPTIONIST",
+  "name": "前台",
+  "description": "前台接待人员",
+  "sort": 5
+}
+
+### 3.2 查询角色列表（分页）
+GET {{baseUrl}}/roles?page=1&pageSize=10
+Authorization: Bearer {{superAdminToken}}
+
+### 3.3 查询角色列表（按名称搜索）
+GET {{baseUrl}}/roles?name=管理
+Authorization: Bearer {{superAdminToken}}
+
+### 3.4 查询角色列表（按状态筛选）
+GET {{baseUrl}}/roles?status=ACTIVE
+Authorization: Bearer {{superAdminToken}}
+
+### 3.5 查询角色详情
+GET {{baseUrl}}/roles/1
+Authorization: Bearer {{superAdminToken}}
+
+### 3.6 更新角色
+PUT {{baseUrl}}/roles/5
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "name": "前台接待",
+  "description": "负责患者接待、挂号等工作"
+}
+
+### 3.7 为角色分配权限
+POST {{baseUrl}}/roles/3/permissions
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "permissionIds": [
+    4,
+    5,
+    6
+  ]
+}
+
+### 3.8 获取角色的所有权限
+GET {{baseUrl}}/roles/3/permissions
+Authorization: Bearer {{superAdminToken}}
+
+### 3.9 为角色批量分配用户
+POST {{baseUrl}}/roles/3/users
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "userIds": [
+    3,
+    4
+  ]
+}
+
+### 3.10 获取角色下的所有用户
+GET {{baseUrl}}/roles/3/users
+Authorization: Bearer {{superAdminToken}}
+
+### 3.11 移除角色下的用户
+DELETE {{baseUrl}}/roles/3/users
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "userIds": [
+    4
+  ]
+}
+
+### 3.12 删除角色（测试失败 - 有用户使用）
+DELETE {{baseUrl}}/roles/3
+Authorization: Bearer {{superAdminToken}}
+
+### 3.13 删除角色（成功 - 无用户使用）
+DELETE {{baseUrl}}/roles/5
+Authorization: Bearer {{superAdminToken}}
+
+### ========================================
+### 4. 用户角色管理
+### ========================================
+
+### 4.1 为用户分配角色
+POST {{baseUrl}}/users/3/roles
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "roleIds": [
+    3,
+    4
+  ]
+}
+
+### 4.2 获取用户的所有角色
+GET {{baseUrl}}/users/3/roles
+Authorization: Bearer {{superAdminToken}}
+
+### 4.3 获取用户的所有权限
+GET {{baseUrl}}/users/3/permissions
+Authorization: Bearer {{superAdminToken}}
+
+### 4.4 移除用户的角色
+DELETE {{baseUrl}}/users/3/roles
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "roleIds": [
+    4
+  ]
+}
+
+### 4.5 获取当前用户的角色
+GET {{baseUrl}}/users/me/roles
+Authorization: Bearer {{doctorToken}}
+
+### 4.6 获取当前用户的权限
+GET {{baseUrl}}/users/me/permissions
+Authorization: Bearer {{doctorToken}}
+
+### ========================================
+### 5. 权限测试
+### ========================================
+
+### 5.1 超级管理员访问（应该成功）
+GET {{baseUrl}}/users
+Authorization: Bearer {{superAdminToken}}
+
+### 5.2 管理员访问（应该成功 - 有 user:view 权限）
+GET {{baseUrl}}/users
+Authorization: Bearer {{adminToken}}
+
+### 5.3 医生访问（应该成功 - 有 user:view 权限）
+GET {{baseUrl}}/users
+Authorization: Bearer {{doctorToken}}
+
+### 5.4 医生创建用户（应该失败 - 无 user:create 权限）
+POST {{baseUrl}}/users
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "123456"
+}
+
+### 5.5 医生删除用户（应该失败 - 无 user:delete 权限）
+DELETE {{baseUrl}}/users/1
+Authorization: Bearer {{doctorToken}}
+
+### 5.6 医生查看角色（应该失败 - 无 role:view 权限）
+GET {{baseUrl}}/roles
+Authorization: Bearer {{doctorToken}}
+
+### ========================================
+### 6. 边界情况测试
+### ========================================
+
+### 6.1 创建重复编码的权限（应该失败）
+POST {{baseUrl}}/permissions
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "code": "user:view",
+  "name": "查看用户",
+  "type": "API"
+}
+
+### 6.2 创建重复编码的角色（应该失败）
+POST {{baseUrl}}/roles
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "code": "ADMIN",
+  "name": "管理员"
+}
+
+### 6.3 为用户分配不存在的角色（应该失败）
+POST {{baseUrl}}/users/3/roles
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "roleIds": [
+    999
+  ]
+}
+
+### 6.4 为角色分配不存在的权限（应该失败）
+POST {{baseUrl}}/roles/3/permissions
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "permissionIds": [
+    999
+  ]
+}
+
+### 6.5 删除超级管理员角色（应该失败）
+DELETE {{baseUrl}}/roles/1
+Authorization: Bearer {{superAdminToken}}
+
+### 6.6 修改超级管理员角色（应该失败）
+PUT {{baseUrl}}/roles/1
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "name": "新的超级管理员"
+}
+
+### 6.7 设置权限的父级为自己（应该失败）
+PUT {{baseUrl}}/permissions/5
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "parentId": 5
+}
+
+### 6.8 设置权限的父级为子级（应该失败 - 循环引用）
+PUT {{baseUrl}}/permissions/1
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "parentId": 5
+}
+
+### ========================================
+### 7. 完整业务流程测试
+### ========================================
+
+### 7.1 创建新角色 "药师"
+POST {{baseUrl}}/roles
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "code": "PHARMACIST",
+  "name": "药师",
+  "description": "药房管理人员",
+  "sort": 6
+}
+
+### 7.2 为药师角色分配权限
+POST {{baseUrl}}/roles/6/permissions
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "permissionIds": [
+    4
+  ]
+}
+
+### 7.3 创建新用户 "王药师"
+POST {{baseUrl}}/users
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "username": "pharmacist",
+  "password": "admin123",
+  "name": "王药师",
+  "email": "pharmacist@clinic.com"
+}
+
+### 7.4 为新用户分配药师角色
+POST {{baseUrl}}/users/5/roles
+Authorization: Bearer {{superAdminToken}}
+Content-Type: application/json
+
+{
+  "roleIds": [
+    6
+  ]
+}
+
+### 7.5 验证新用户权限
+GET {{baseUrl}}/users/5/permissions
+Authorization: Bearer {{superAdminToken}}
+
+### 7.6 药师登录
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "pharmacist",
+  "password": "admin123"
+}
+
+### 7.7 药师访问用户列表（应该成功 - 有权限）
+GET {{baseUrl}}/users
+Authorization: Bearer {{pharmacistToken}}
+
+### 7.8 药师创建用户（应该失败 - 无权限）
+POST {{baseUrl}}/users
+Authorization: Bearer {{pharmacistToken}}
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "123456"
+}

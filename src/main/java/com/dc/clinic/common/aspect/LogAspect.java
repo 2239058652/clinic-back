@@ -13,7 +13,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -28,11 +27,13 @@ public class LogAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(LogAspect.class);
 
-    @Autowired
-    private OperationLogService logService;
+    private final OperationLogService logService;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    public LogAspect(OperationLogService logService, ObjectMapper objectMapper) {
+        this.logService = logService;
+        this.objectMapper = objectMapper;
+    }
 
     // 定义切点
     @Pointcut("@annotation(com.dc.clinic.common.annotation.Log)")
@@ -77,8 +78,7 @@ public class LogAspect {
             // 1. 获取当前登录人
             try {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                if (authentication != null && authentication.getPrincipal() instanceof LoginUser) {
-                    LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+                if (authentication != null && authentication.getPrincipal() instanceof LoginUser loginUser) {
                     operLog.setOperatorName(loginUser.getUsername());
                 }
             } catch (Exception ex) {
@@ -133,7 +133,12 @@ public class LogAspect {
             operLog.setOperTime(new Date());
 
             // 8. 保存到数据库（建议异步保存）
-            logService.save(operLog);
+            try {
+                logService.saveLog(operLog);
+            } catch (Exception ex) {
+                logger.error("保存操作日志失败", ex);
+            }
+
             logger.debug("操作日志记录成功: {}", operLog.getTitle());
 
         } catch (Exception ex) {
@@ -148,11 +153,10 @@ public class LogAspect {
         try {
             // 获取方法签名
             org.aspectj.lang.Signature signature = joinPoint.getSignature();
-            if (!(signature instanceof org.aspectj.lang.reflect.MethodSignature)) {
+            if (!(signature instanceof org.aspectj.lang.reflect.MethodSignature methodSignature)) {
                 return null;
             }
 
-            org.aspectj.lang.reflect.MethodSignature methodSignature = (org.aspectj.lang.reflect.MethodSignature) signature;
             // 获取方法上的注解
             return methodSignature.getMethod().getAnnotation(Log.class);
         } catch (Exception e) {

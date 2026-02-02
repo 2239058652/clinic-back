@@ -15,6 +15,7 @@
 
 #### 使用说明
 
+### 启动Redis
 1.  cd "C:\Program Files\Redis-3.0.504"; .\redis-server.exe
 2.  xxxx
 3.  xxxx
@@ -33,36 +34,14 @@ lt --port 4567 --local-host localhost
 
 #### 说明
 Actuator 端点：
-            访问 http://localhost:4300/swagger-ui/index.html#/ 查看swagger 文档    
-            访问 http://localhost:4300/actuator/loggers/com.dental.clinic 可以查看 com.dental.clinic 包的日志级别。
-            访问 http://localhost:4300/actuator/loggers 可以查看当前所有 Logger 的名称和日志级别。     
+            访问 http://localhost:9095/swagger-ui/index.html#/ 查看swagger 文档    
+            访问 http://localhost:9095/actuator/loggers/com.dental.clinic 可以查看 com.dental.clinic 包的日志级别。
+            访问 http://localhost:9095/actuator/loggers 可以查看当前所有 Logger 的名称和日志级别。     
 
 ```
-com.dental.clinic
+com.dc.clinic
 ├─ common
 ├─ config
-├─ module
-│    └─ user
-│         ├─ controller
-│         │     └─ UserController.java
-│         ├─ service
-│         │     ├─ UserService.java
-│         │     └─ impl
-│         │           └─ UserServiceImpl.java
-│         ├─ mapper
-│         │     └─ UserMapper.java
-│         ├─ entity
-│         │     └─ User.java
-│         ├─ dto
-│         │     ├─ UserCreateDTO.java
-│         │     ├─ UserUpdateDTO.java
-│         │     ├─ UserQueryDTO.java
-│         │     └─ UpdateProfileDTO.java
-│         ├─ vo
-│         │     └─ UserDetailVO.java
-│         ├─ convert
-│         │     └─ UserConvert.java
-│         └─ enums
-│               └─ UserStatusEnum.java
-└─ ClinicSystemApplication.java
+├─ modules
+└─ ClinicApplication.java
 ```
