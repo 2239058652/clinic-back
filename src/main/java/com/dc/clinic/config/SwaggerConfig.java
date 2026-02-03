@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Collections;
 
 @Configuration
-public class OpenApiConfig {
+public class SwaggerConfig {
 
     @Bean
     public OpenAPI clinicOpenAPI() {
