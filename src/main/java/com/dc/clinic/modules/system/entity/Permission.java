@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true) // 继承父类属性
 @TableName("permissions")
 public class Permission extends BaseEntity {
     private String code;      // 权限编码，如 user:list

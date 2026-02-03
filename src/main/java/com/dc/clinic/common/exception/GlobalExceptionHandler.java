@@ -2,11 +2,12 @@ package com.dc.clinic.common.exception;
 
 import com.dc.clinic.common.response.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import org.springframework.security.access.AccessDeniedException; // ⚠️ 注意：必须是 security 包下的异常
+import java.util.Objects;
 
 @Slf4j
 @RestControllerAdvice
@@ -35,7 +36,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Result<String> handleValidationException(MethodArgumentNotValidException e) {
-        String message = e.getBindingResult().getFieldError().getDefaultMessage();
+        String message = Objects.requireNonNull(e.getBindingResult().getFieldError()).getDefaultMessage();
         return Result.badRequest(message);
     }
 

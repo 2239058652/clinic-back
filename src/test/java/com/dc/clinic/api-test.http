@@ -9,9 +9,9 @@
 # nurse admin123 护士 无
 
 @baseUrl = http://localhost:9095
-@superAdminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoic3VwZXJhZG1pbiIsImp0aSI6IjgyYTA3YTUyLWUwZmMtNDdjZC05OGE1LWRjMmNhMWQyNWZjNiIsInJvbGVzIjpbIlNVUEVSX0FETUlOIl0sInBlcm1pc3Npb25zIjpbInN5c3RlbSIsInN5c3RlbTp1c2VyIiwidXNlcjp2aWV3IiwidXNlcjpkZWxldGUiLCJ1c2VyOmNyZWF0ZSIsInVzZXI6dXBkYXRlIiwic3lzdGVtOnJvbGUiLCJyb2xlOnZpZXciLCJyb2xlOmNyZWF0ZSIsInJvbGU6dXBkYXRlIiwicm9sZTpkZWxldGUiLCJyb2xlOmFzc2lnbiIsInVzZXI6YXNzaWduLXJvbGUiLCJzeXN0ZW06cGVybWlzc2lvbiIsInBlcm1pc3Npb246dXBkYXRlIiwicGVybWlzc2lvbjp2aWV3IiwicGVybWlzc2lvbjpjcmVhdGUiLCJwZXJtaXNzaW9uOmRlbGV0ZSJdLCJpYXQiOjE3NjkwNDk0NjQsImV4cCI6MTc2OTA1MTI2NH0.wmmHfA5473PU_-R6PSbQkOaqpLIrCnnwiARtXlvKvsE
+@superAdminToken = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzdXBlcmFkbWluIiwiaWF0IjoxNzcwMDA5MDU4LCJleHAiOjE3NzAwOTU0NTh9.yR8B3WY6mHCNx_5s2i8Fq_edpomBKqiHdFVeMbYf7pg
 @adminToken = 
-@doctorToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsInVzZXJuYW1lIjoiZG9jdG9yIiwianRpIjoiZjUyN2M1YjctODAzZS00ZDhiLWJiNjAtZDVmNWRiNDZiMDkxIiwicm9sZXMiOlsiRE9DVE9SIl0sInBlcm1pc3Npb25zIjpbInVzZXI6dmlldyJdLCJpYXQiOjE3Njk1MDU2MDcsImV4cCI6MTc2OTUwNzQwN30.XMXnkpdftIf-bMUpM2TxwwYALefKgmBi5Q5bqv__FvQ
+@doctorToken =
 @pharmacistToken =
 
 ### 登录
@@ -19,8 +19,25 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "username": "doctor",
+  "username": "superadmin",
   "password": "admin123"
+}
+
+### ========================================
+### 8. 患者管理
+### ========================================
+
+### 新增患者
+POST {{baseUrl}}/patient/add
+Content-Type: application/json
+Authorization: Bearer {{superAdminToken}}
+
+{
+  "name": "张三",
+  "gender": "MALE",
+  "age": 35,
+  "phone": "13800138000",
+  "idCard": "110101199001011234"
 }
 
 ### 退出登录
